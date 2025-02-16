@@ -9,7 +9,6 @@ import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import { visualizer } from "rollup-plugin-visualizer";
 import viteImagemin from "vite-plugin-imagemin";
-import viteCompression from "vite-plugin-compression";
 var pathSrc = resolve(__dirname, "src");
 export default defineConfig({
     resolve: {
@@ -63,13 +62,19 @@ export default defineConfig({
                 plugins: [{ removeViewBox: false }],
             },
         }),
-        viteCompression({
-            algorithm: "brotliCompress",
-            threshold: 10240, // 10KB 以上文件才压缩
-        }),
+        // viteCompression({
+        //   algorithm: "gzip", // 使用 gzip 压缩
+        //   threshold: 10240, // 超过 10KB 的文件才会压缩
+        //   ext: ".gz", // 压缩文件的扩展名
+        // }),
     ],
+    // 依赖优化配置
+    optimizeDeps: {
+        include: ["axios", "echarts", "element-plus"], // 强制预构建的依赖
+        exclude: [""], // 排除不需要预构建的依赖
+    },
     build: {
-        // minify: "terser", // 使用 terser 进行压缩
+        minify: "terser", // 使用 terser 进行压缩
         terserOptions: {
             compress: {
                 // 移除所有 console 语句
@@ -81,23 +86,34 @@ export default defineConfig({
             },
         },
         rollupOptions: {
+            input: {
+                main: resolve(__dirname, "./index.html"),
+            },
             output: {
                 manualChunks: function (id) {
                     if (id.includes("node_modules")) {
-                        if (id.includes("element-plus"))
-                            return "element-plus";
-                        if (id.includes("echarts"))
-                            return "echarts";
-                        if (id.includes("lodash"))
-                            return "lodash";
-                        if (id.includes("dayjs"))
-                            return "dayjs";
-                        if (id.includes("vue"))
-                            return "vue-core";
-                        return "vendor";
+                        // if (id.includes("/element-plus/")) return "element-plus";
+                        // if (id.includes("/echarts/")) return "echarts";
+                        // // 合并高频小库
+                        // if (
+                        //   id.includes("/lodash/") ||
+                        //   id.includes("/dayjs/") ||
+                        //   id.includes("/vue/")
+                        // ) {
+                        //   return "vendor-core";
+                        // }
+                        // return "vendor";
+                        return id
+                            .toString()
+                            .split("node_modules/")[1]
+                            .split("/")[0]
+                            .toString();
                     }
                 },
-                experimentalMinChunkSize: 20000, // 调整最小 chunk 大小
+                chunkFileNames: "js/[name]-[hash].js",
+                entryFileNames: "js/[name]-[hash].js",
+                assetFileNames: "assets/[name]-[hash][extname]",
+                // experimentalMinChunkSize: 20000, // 调整最小 chunk 大小
             },
         },
         chunkSizeWarningLimit: 1000, // 调整警告阈值
