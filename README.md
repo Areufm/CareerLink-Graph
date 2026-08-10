@@ -1,8 +1,15 @@
+
+
 # 基于知识图谱可视化的人才招聘平台
 
 本项目 main 分支为求职者端
 
 技术栈 `vue3` `ts` `scss` `relation-graph` `pinia` `element-plus` `echarts`
+
+## 本地运行
+1. 安装依赖：`pnpm install`
+2. 启动开发服务器：`pnpm dev`
+3. 构建生产版本：`pnpm build`
 
 企业端及管理员端由于和后台服务器绑定 无法直接查看
 
